@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gunzgo2mars/go-graceful-with-context/src/model"
 	"github.com/gunzgo2mars/go-graceful-with-context/src/pkg/cache"
 	articleRepo "github.com/gunzgo2mars/go-graceful-with-context/src/repository/article"
 	"github.com/gunzgo2mars/go-graceful-with-context/src/service"
@@ -36,8 +38,18 @@ func main() {
 	articleRepo := articleRepo.New(cacheClient)
 	svc := service.New(articleRepo)
 	handler := func(w http.ResponseWriter, r *http.Request) {
+
+		fmt.Println("Start work at layer handler")
+
+		request := new(model.RequestCreateArticleInfo)
+		err := json.NewDecoder(r.Body).Decode(request)
+		if err != nil {
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
 		ctx := r.Context()
-		if err := svc.CreateNewArticleInfo(ctx); err != nil {
+		if err := svc.CreateNewArticleInfo(ctx, request); err != nil {
 			http.Error(w, "Failed transaction", http.StatusInternalServerError)
 			return
 		}

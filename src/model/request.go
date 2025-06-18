@@ -1,7 +1,7 @@
 package model
 
 type RequestCreateArticleInfo struct {
-	Title  string
-	Text   string
-	Author string
+	Title  string `json:"title"`
+	Text   string `json:"text"`
+	Author string `json:"author"`
 }
